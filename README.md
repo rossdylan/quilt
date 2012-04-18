@@ -26,3 +26,10 @@ A distributed chat client intended for the Sugar environment.
 	- Tubes + dbus + olpc activity callbacks
 - Use something based on avahi (skip all the olpc stuff)
 - Write our own peer discovery system
+
+#Internals
+- Single Thread handles incoming requests and puts them into a queue to be processed
+    - Queue handlers then process the data and determine what to do with it
+        - This could include forwarding messages to all outgoing
+            - Put the message into the outgoing queue for whatever server it needs to go to
+- Incoming message --> proc-queue -> processor thread -> server Dependant Outgoing Queue
