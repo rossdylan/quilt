@@ -28,6 +28,7 @@ A distributed chat client intended for the Sugar environment.
 - Write our own peer discovery system
 
 #Internals
+-[NOTE] Queues are to hopefully work around threading funky-ness
 - Single Thread handles incoming requests and puts them into a queue to be processed
     - Queue handlers then process the data and determine what to do with it
         - This could include forwarding messages to all outgoing
