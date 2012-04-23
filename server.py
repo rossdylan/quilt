@@ -66,3 +66,10 @@ class QuiltServer(object):
     def start(self):
         self.incoming.start()
 
+class QuiltProtocol(object):
+
+    def __init__(self):
+        pass
+
+    def hanlde(self, message):
+        pass
