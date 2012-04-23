@@ -30,7 +30,25 @@ class ProcessorThread(Thread):
     def run(self):
         while True:
             data = self.proc_queue.get()
+            #Somehow in this section we need to do protocol parsing
             print data #Replace with actually processing
+
+
+class OutgoingThread(Thread):
+
+    def __init__(self, addr, port, queue):
+        self.address = "tcp://{0}:{1}".format(addr,port)
+        self.queue = queue
+        self.context = zmq.Context()
+        self.outgoing = self.context.Socket(zmq.REQ)
+
+    def run(self):
+        self.outgoing.connect(self.address)
+        while True:
+            data = self.queue.get()
+            self.outgoing.send_multipart(data)
+            self.outgoing.recv() #Get our ACK
+
 
 class QuiltServer(object):
 
