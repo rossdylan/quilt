@@ -78,4 +78,14 @@ class QuiltProtocol(object):
     def handle(self, message):
         assert type(message) == type(list())
         #Fill this in with a protocol implementation
-        pass
+        extra = message[0] #this could hold routing things
+        cmd = message[1]
+        args = message[2:]
+        if cmd == "server-connect": #A new server connects
+            outgoing_addr = args[0]
+            if not outgoing_addr in self.outgoing_queues:
+                outgoing_port = args[1]
+                new_queue = Queue()
+                new_thread = OutgoingThread(outgoing_addr, outgoing_port, new_queue)
+                new_thread.start()
+                self.outgoing_queues[outgoing_addr] = new_queue
