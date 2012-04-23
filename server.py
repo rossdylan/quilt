@@ -22,16 +22,16 @@ class IncomingThread(Thread):
 
 class ProcessorThread(Thread):
 
-    def __init__(self, proc_queue, outgoing_queues):
+    def __init__(self, proc_queue, protocol):
         super(ProcessorThread, self).__init__()
         self.proc_queue = proc_queue
-        self.outgoing_queue = outgoing_queues
+        self.protocol = protocol
 
     def run(self):
         while True:
             data = self.proc_queue.get()
             #Somehow in this section we need to do protocol parsing
-            print data #Replace with actually processing
+            self.protocol.handle(data)
 
 
 class OutgoingThread(Thread):
@@ -52,16 +52,20 @@ class OutgoingThread(Thread):
 
 class QuiltServer(object):
 
-    def __init__(self, incoming_port):
+    def __init__(self, incoming_port, max_proc=10):
+        self.max_processors = max_proc
         self.incoming_port
         self.context = zmq.Context()
         self.proc_queue = Queue()
-        self.outgoing_queues = {}
+        self.protocol = QuiltProtocol()
         """
             Note on outgoing_queues:
             When a new server connects we assign it a queue so we can then route messages to it properly
         """
         self.incoming = IncomingThread(self.incoming_port, self.proc_queue)
+        for i in range(self.max_processors):
+            t = ProcessorThread(self.proc_queue,self.protocol)
+            t.start()
 
     def start(self):
         self.incoming.start()
@@ -69,7 +73,8 @@ class QuiltServer(object):
 class QuiltProtocol(object):
 
     def __init__(self):
-        pass
+        self.outgoing_queues = {}
 
-    def hanlde(self, message):
+    def handle(self, message):
+        #Fill this in with a protocol implementation
         pass
