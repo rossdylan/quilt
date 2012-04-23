@@ -10,6 +10,7 @@ A distributed chat client intended for the Sugar environment.
 #Protocol Ideas:
 - protocol itself it loosely based on irc only with json
 - all messages are JSON blobs
+- If we do continue on with json we might want to use a faster json parser
 - Messages include:
 	- JOIN <addr> <nick> <chan>
 	- PART <addr> <nick> <chan>
@@ -34,3 +35,8 @@ A distributed chat client intended for the Sugar environment.
         - This could include forwarding messages to all outgoing
             - Put the message into the outgoing queue for whatever server it needs to go to
 - Incoming message --> proc-queue -> processor thread -> server Dependant Outgoing Queue
+
+#Dependancies:
+- pyzmq (pip install zmq)
+	- libevent
+	- zeromq
