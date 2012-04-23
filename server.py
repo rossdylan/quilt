@@ -76,5 +76,6 @@ class QuiltProtocol(object):
         self.outgoing_queues = {}
 
     def handle(self, message):
+        assert type(message) == type(list())
         #Fill this in with a protocol implementation
         pass
