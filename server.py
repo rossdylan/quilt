@@ -40,7 +40,7 @@ class OutgoingThread(Thread):
         self.address = "tcp://{0}:{1}".format(addr,port)
         self.queue = queue
         self.context = zmq.Context()
-        self.outgoing = self.context.Socket(zmq.REQ)
+        self.outgoing = self.context.socket(zmq.REQ)
 
     def run(self):
         self.outgoing.connect(self.address)
