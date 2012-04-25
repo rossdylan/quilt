@@ -37,6 +37,7 @@ class ProcessorThread(Thread):
 class OutgoingThread(Thread):
 
     def __init__(self, addr, port, queue):
+        super(OutgoingThread, self).__init__()
         self.address = "tcp://{0}:{1}".format(addr,port)
         self.queue = queue
         self.context = zmq.Context()
