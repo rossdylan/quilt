@@ -9,7 +9,7 @@ class IncomingThread(Thread):
         self.listen_port = listen_port
         self.proc_queue = proc_queue
         self.context = zmq.Context()
-        self.incoming = self.context.Socket(zmq.REP)
+        self.incoming = self.context.socket(zmq.REP)
         super(IncomingThread, self).__init__()
 
     def run(self):
@@ -52,12 +52,13 @@ class OutgoingThread(Thread):
 
 class QuiltServer(object):
 
-    def __init__(self, incoming_port, max_proc=10):
+    def __init__(self, addr, incoming_port, max_proc=10):
         self.max_processors = max_proc
-        self.incoming_port
+        self.addr = addr
+        self.incoming_port = incoming_port
         self.context = zmq.Context()
         self.proc_queue = Queue()
-        self.protocol = QuiltProtocol()
+        self.protocol = QuiltProtocol(self.addr,self.incoming_port)
         """
             Note on outgoing_queues:
             When a new server connects we assign it a queue so we can then route messages to it properly
@@ -118,5 +119,9 @@ class QuiltProtocol(object):
 
 
 if __name__ == "__main__":
-    s = QuiltServer(6667)
+    import sys
+    if len(sys.argv) < 1:
+        print "Usage: server.py <hostname>"
+        exit()
+    s = QuiltServer("carthage.csh.rit.edu", 6667)
     s.start()
