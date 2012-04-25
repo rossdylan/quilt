@@ -80,8 +80,8 @@ class QuiltServer(object):
                     print "/connect <address> <port>"
                     continue
                 self.protocol.connect_to_server(user_in[1], user_in[2])
-            if cmd == "/nick":
-                continue
+            else:
+               self.protocol.send_msg(user_in[0], " ".join(user_in[1:]))
 
 class QuiltProtocol(object):
 
@@ -89,6 +89,9 @@ class QuiltProtocol(object):
         self.addr = addr
         self.port = port
         self.outgoing_queues = {}
+
+    def send_msg(self, server, msg):
+        self.outgoing_queues[server].put(["message",msg])
 
     def connect_to_server(self,server, port):
         if not server in self.outgoing_queues:
@@ -112,11 +115,13 @@ class QuiltProtocol(object):
     def handle(self, message):
         assert type(message) == type(list())
         #Fill this in with a protocol implementation
-        extra = message[0] #this could hold routing things
-        cmd = message[1]
-        args = message[2:]
+        cmd = message[0]
+        args = message[1:]
         if cmd == "server-connect": #A new server connects
             self.handle_server_connect(args)
+        if cmd == "message":
+            print "\nReceived: {0}\n>>".format(args[0])
+
 
 
 if __name__ == "__main__":
