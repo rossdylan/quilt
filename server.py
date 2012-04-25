@@ -22,29 +22,60 @@ class IncomingThread(Thread):
 
 class ProcessorThread(Thread):
 
-    def __init__(self, proc_queue, outgoing_queues):
+    def __init__(self, proc_queue, protocol):
         super(ProcessorThread, self).__init__()
         self.proc_queue = proc_queue
-        self.outgoing_queue = outgoing_queues
+        self.protocol = protocol
 
     def run(self):
         while True:
             data = self.proc_queue.get()
-            print data #Replace with actually processing
+            #Somehow in this section we need to do protocol parsing
+            self.protocol.handle(data)
+
+
+class OutgoingThread(Thread):
+
+    def __init__(self, addr, port, queue):
+        self.address = "tcp://{0}:{1}".format(addr,port)
+        self.queue = queue
+        self.context = zmq.Context()
+        self.outgoing = self.context.Socket(zmq.REQ)
+
+    def run(self):
+        self.outgoing.connect(self.address)
+        while True:
+            data = self.queue.get()
+            self.outgoing.send_multipart(data)
+            self.outgoing.recv() #Get our ACK
+
 
 class QuiltServer(object):
 
-    def __init__(self, incoming_port):
+    def __init__(self, incoming_port, max_proc=10):
+        self.max_processors = max_proc
         self.incoming_port
         self.context = zmq.Context()
         self.proc_queue = Queue()
-        self.outgoing_queues = {}
+        self.protocol = QuiltProtocol()
         """
             Note on outgoing_queues:
             When a new server connects we assign it a queue so we can then route messages to it properly
         """
         self.incoming = IncomingThread(self.incoming_port, self.proc_queue)
+        for i in range(self.max_processors):
+            t = ProcessorThread(self.proc_queue,self.protocol)
+            t.start()
 
     def start(self):
         self.incoming.start()
 
+class QuiltProtocol(object):
+
+    def __init__(self):
+        self.outgoing_queues = {}
+
+    def handle(self, message):
+        assert type(message) == type(list())
+        #Fill this in with a protocol implementation
+        pass
