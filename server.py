@@ -69,11 +69,43 @@ class QuiltServer(object):
 
     def start(self):
         self.incoming.start()
+        print "Welcome to Quilt"
+        while True:
+            user_in = raw_input(">>").split(" ")
+            cmd = user_in[0]
+            if cmd == "/connect":
+                if len(user_in) != 3:
+                    print "/connect <address> <port>"
+                    continue
+                self.protocol.connect_to_server(user_in[1], user_in[2])
+            if cmd == "/nick":
+                continue
 
 class QuiltProtocol(object):
 
-    def __init__(self):
+    def __init__(self, addr, port):
+        self.addr = addr
+        self.port = port
         self.outgoing_queues = {}
+
+    def connect_to_server(self,server, port):
+        if not server in self.outgoing_queues:
+            new_queue = Queue()
+            new_thread = OutgoingThread(server, port, new_queue)
+            new_thread.start()
+            self.outgoing_queues[server] = new_queue
+            self.outgoing_quques[server].put(["server-connect", self.addr, self.port])
+
+    def handle_server_connect(self,args):
+        outgoing_addr = args[0]
+        if not outgoing_addr in self.outgoing_queues:
+            outgoing_port = args[1]
+            new_queue = Queue()
+            new_thread = OutgoingThread(outgoing_addr, outgoing_port, new_queue)
+            new_thread.start()
+            self.outgoing_queues[outgoing_addr] = new_queue
+            self.outgoing_quques[outgoing_addr].put(["server-connect", self.addr, self.port])
+            print "Server {0}:{1} connected to us".format(outgoing_addr, outgoing_port)
 
     def handle(self, message):
         assert type(message) == type(list())
@@ -82,10 +114,9 @@ class QuiltProtocol(object):
         cmd = message[1]
         args = message[2:]
         if cmd == "server-connect": #A new server connects
-            outgoing_addr = args[0]
-            if not outgoing_addr in self.outgoing_queues:
-                outgoing_port = args[1]
-                new_queue = Queue()
-                new_thread = OutgoingThread(outgoing_addr, outgoing_port, new_queue)
-                new_thread.start()
-                self.outgoing_queues[outgoing_addr] = new_queue
+            self.handle_server_connect(args)
+
+
+if __name__ == "__main__":
+    s = QuiltServer(6667)
+    s.start()
