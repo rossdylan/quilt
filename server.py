@@ -120,8 +120,8 @@ class QuiltProtocol(object):
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) < 1:
-        print "Usage: server.py <hostname>"
+    if len(sys.argv) < 3:
+        print "Usage: server.py <hostname> <port>"
         exit()
-    s = QuiltServer("carthage.csh.rit.edu", 6667)
+    s = QuiltServer(sys.argv[1], int(sys.argv[2]))
     s.start()
