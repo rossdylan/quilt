@@ -46,7 +46,7 @@ class OutgoingThread(Thread):
     def run(self):
         self.outgoing.connect(self.address)
         while True:
-            data = self.queue.get()
+            data = [str(i) for i in self.queue.get()]
             self.outgoing.send_multipart(data)
             self.outgoing.recv() #Get our ACK
 
@@ -101,7 +101,7 @@ class QuiltProtocol(object):
     def handle_server_connect(self,args):
         outgoing_addr = args[0]
         if not outgoing_addr in self.outgoing_queues:
-            outgoing_port = args[1]
+            outgoing_port = int(args[1])
             new_queue = Queue()
             new_thread = OutgoingThread(outgoing_addr, outgoing_port, new_queue)
             new_thread.start()
