@@ -6,6 +6,16 @@ from Queue import Queue
 class IncomingThread(Thread):
 
     def __init__(self, listen_port, proc_queue):
+        """
+        The Incoming thread handles connections from servers and passes the
+        data they send off to the processors
+
+        :type listen_port: int
+        :param listen_port: the port to listen for connecting servers on
+
+        :type proc_queue: Queue
+        :param proc_queue: The queue to pass messages off to processor with
+        """
         self.listen_port = listen_port
         self.proc_queue = proc_queue
         self.context = zmq.Context()
@@ -23,6 +33,16 @@ class IncomingThread(Thread):
 class ProcessorThread(Thread):
 
     def __init__(self, proc_queue, protocol):
+        """
+        This thread takes data out of the proc_queue and
+        does things to that data based on the protocol
+
+        :type proc_queue: Queue
+        :param proc_queue: Queue of data to be processed
+
+        :type protocol: QuiltProtocol
+        :param: protocol: the object used to parse the data recieved
+        """
         super(ProcessorThread, self).__init__()
         self.proc_queue = proc_queue
         self.protocol = protocol
@@ -37,6 +57,19 @@ class ProcessorThread(Thread):
 class OutgoingThread(Thread):
 
     def __init__(self, addr, port, queue):
+        """
+        For each outgoing connection one of these threads is created
+        and it will forward the data in its personal Queue to the destination
+
+        :type addr: str
+        :param addr: Address of the server to connect to
+
+        :type port: int
+        :param port: port number of the server to connect to
+
+        :type queue: Queue
+        :param queue: Data queue for outgoing data for this connection
+        """
         super(OutgoingThread, self).__init__()
         self.address = "tcp://{0}:{1}".format(addr,port)
         self.queue = queue
@@ -54,6 +87,19 @@ class OutgoingThread(Thread):
 class QuiltServer(object):
 
     def __init__(self, addr, incoming_port, max_proc=10):
+        """
+        The main server class for Quilt, spins up threads for incoming connections
+        and processing data, and then runs the user interface code
+
+        :type addr: str
+        :param addr: address of this server
+
+        :type incoming_port: int
+        :param incoming_port: port for incoming connects
+
+        :type: max_proc: int
+        :param: max_proc: maximum number of processor threads to use
+        """
         self.max_processors = max_proc
         self.addr = addr
         self.incoming_port = incoming_port
@@ -70,6 +116,9 @@ class QuiltServer(object):
             t.start()
 
     def start(self):
+        """
+        Start the server and display and user interface
+        """
         self.incoming.start()
         print "Welcome to Quilt"
         while True:
@@ -91,9 +140,28 @@ class QuiltProtocol(object):
         self.outgoing_queues = {}
 
     def send_msg(self, server, msg):
+        """
+        Send a message to a specific server
+
+        :type server: str
+        :param server: Server name to send a message to
+
+        :type msg: str
+        :param msg: Message to send to server
+        """
         self.outgoing_queues[server].put(["message",msg])
 
     def connect_to_server(self,server, port):
+        """
+        Connect to a server
+
+        :type server: str
+        :param server: server address
+
+        :type port: int
+        :param port: port number of the server
+        """
+
         if not server in self.outgoing_queues:
             new_queue = Queue()
             new_thread = OutgoingThread(server, port, new_queue)
@@ -102,6 +170,13 @@ class QuiltProtocol(object):
             self.outgoing_queues[server].put(["server-connect", self.addr, self.port])
 
     def handle_server_connect(self,args):
+        """
+        Handle an incoming server connect, the incoming server sends us server-connect
+        and then we do things like connect back to them
+
+        :type args: list
+        :param args: A list of args that are recieved from the server
+        """
         outgoing_addr = args[0]
         if not outgoing_addr in self.outgoing_queues:
             outgoing_port = int(args[1])
@@ -113,6 +188,13 @@ class QuiltProtocol(object):
             print "Server {0}:{1} connected to us".format(outgoing_addr, outgoing_port)
 
     def handle(self, message):
+        """
+        Handler method recieves a message and decided how to deal with it
+
+        :type message: list
+        :param message: a list of data recieved from a zeromq recv_multipart
+        """
+
         assert type(message) == type(list())
         #Fill this in with a protocol implementation
         cmd = message[0]
