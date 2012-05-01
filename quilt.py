@@ -1,4 +1,7 @@
-import zmq
+try:
+    import zmq
+except:
+    print "Error, you don't have pyzmq installed"
 from threading import Thread
 from Queue import Queue
 
