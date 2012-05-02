@@ -40,3 +40,10 @@ A distributed chat client intended for the Sugar environment.
 - pyzmq (pip install zmq)
 	- libevent
 	- zeromq
+
+#Hacking
+
+- clone it
+- mkvirtualenv --system-site-packages quilt
+- python setup.py develop
+- quilt-console --help
