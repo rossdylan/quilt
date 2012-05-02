@@ -1,9 +1,22 @@
-import zmq
+try:
+    import zmq
+except:
+    print "Error, you don't have pyzmq installed"
 from threading import Thread
 from Queue import Queue
 
 
 class IncomingThread(Thread):
+    """
+    The Incoming thread handles connections from servers and passes the
+    data they send off to the processors
+
+    :type listen_port: int
+    :param listen_port: the port to listen for connecting servers on
+
+    :type proc_queue: Queue
+    :param proc_queue: The queue to pass messages off to processor with
+    """
 
     def __init__(self, listen_port, proc_queue):
         self.listen_port = listen_port
@@ -21,6 +34,16 @@ class IncomingThread(Thread):
 
 
 class ProcessorThread(Thread):
+    """
+    This thread takes data out of the proc_queue and
+    does things to that data based on the protocol
+
+    :type proc_queue: Queue
+    :param proc_queue: Queue of data to be processed
+
+    :type protocol: QuiltProtocol
+    :param protocol: the object used to parse the data recieved
+    """
 
     def __init__(self, proc_queue, protocol):
         super(ProcessorThread, self).__init__()
@@ -35,6 +58,19 @@ class ProcessorThread(Thread):
 
 
 class OutgoingThread(Thread):
+    """
+    For each outgoing connection one of these threads is created
+    and it will forward the data in its personal Queue to the destination
+
+    :type addr: str
+    :param addr: Address of the server to connect to
+
+    :type port: int
+    :param port: port number of the server to connect to
+
+    :type queue: Queue
+    :param queue: Data queue for outgoing data for this connection
+    """
 
     def __init__(self, addr, port, queue):
         super(OutgoingThread, self).__init__()
@@ -52,6 +88,19 @@ class OutgoingThread(Thread):
 
 
 class QuiltServer(object):
+    """
+    The main server class for Quilt, spins up threads for incoming connections
+    and processing data, and then runs the user interface code
+
+    :type addr: str
+    :param addr: address of this server
+
+    :type incoming_port: int
+    :param incoming_port: port for incoming connects
+
+    :type: max_proc: int
+    :param: max_proc: maximum number of processor threads to use
+    """
 
     def __init__(self, addr, incoming_port, max_proc=10):
         self.max_processors = max_proc
@@ -60,16 +109,15 @@ class QuiltServer(object):
         self.context = zmq.Context()
         self.proc_queue = Queue()
         self.protocol = QuiltProtocol(self.addr,self.incoming_port)
-        """
-            Note on outgoing_queues:
-            When a new server connects we assign it a queue so we can then route messages to it properly
-        """
         self.incoming = IncomingThread(self.incoming_port, self.proc_queue)
         for i in range(self.max_processors):
             t = ProcessorThread(self.proc_queue,self.protocol)
             t.start()
 
     def start(self):
+        """
+        Start the server and display and user interface
+        """
         self.incoming.start()
         print "Welcome to Quilt"
         while True:
@@ -90,18 +138,46 @@ class QuiltProtocol(object):
         self.port = port
         self.outgoing_queues = {}
 
-    def send_msg(self, server, msg):
-        self.outgoing_queues[server].put(["message",msg])
-
     def connect_to_server(self,server, port):
+        """
+        Connect to a server
+
+        :type server: str
+        :param server: server address
+
+        :type port: int
+        :param port: port number of the server
+        """
+
         if not server in self.outgoing_queues:
             new_queue = Queue()
             new_thread = OutgoingThread(server, port, new_queue)
             new_thread.start()
             self.outgoing_queues[server] = new_queue
-            self.outgoing_queues[server].put(["server-connect", self.addr, self.port])
+            self.outgoing_queues[server].put([server, "server_connect", self.addr, self.port])
+
+    def ping_server(self, server):
+        """
+        Ping a specific server
+        Next step in this implementation is to allow for pinging servers we are not directly
+        connected to, this involves routing
+
+        :type server: str
+        :param server: The server to ping
+        """
+
+        if server in self.outgoing_queues:
+            self.outgoing_queues.put([server, "ping", self.addr])
 
     def handle_server_connect(self,args):
+        """
+        Handle an incoming server connect, the incoming server sends us server-connect
+        and then we do things like connect back to them
+        args should look like this: [address, port]
+
+        :type args: list
+        :param args: A list of args that are recieved from the server
+        """
         outgoing_addr = args[0]
         if not outgoing_addr in self.outgoing_queues:
             outgoing_port = int(args[1])
@@ -109,25 +185,48 @@ class QuiltProtocol(object):
             new_thread = OutgoingThread(outgoing_addr, outgoing_port, new_queue)
             new_thread.start()
             self.outgoing_queues[outgoing_addr] = new_queue
-            self.outgoing_queues[outgoing_addr].put(["server-connect", self.addr, self.port])
+            self.outgoing_queues[outgoing_addr].put(["server_connect", self.addr, self.port])
             print "Server {0}:{1} connected to us".format(outgoing_addr, outgoing_port)
 
+    def handle_ping(self, args):
+        """
+        Handle a ping from an incoming server
+        format is [ping, sender]
+        response is [pong, ourname]
+
+        :type args: list
+        :param args: A list of arguments for this command
+        """
+        server_name = args[0]
+        if server_name in self.outgoing_queues:
+            self.outgoing_queues.put([server_name, "pong", self.addr])
+
     def handle(self, message):
+        """
+        Handler method recieves a message and decided how to deal with it
+        The protocol is split into parts: [destination, cmd, args...]
+        Destination options are: all or a single server
+        :type message: list
+        :param message: a list of data recieved from a zeromq recv_multipart
+        """
+
         assert type(message) == type(list())
         #Fill this in with a protocol implementation
-        cmd = message[0]
-        args = message[1:]
-        if cmd == "server-connect": #A new server connects
+        dest = message[0]
+        cmd = message[1]
+        args = message[2:]
+        if hasattr(self,"handle_" + cmd):
+            getattr(self,"handle_" + cmd)(args)
             self.handle_server_connect(args)
-        if cmd == "message":
-            print "\nReceived: {0}\n>>".format(args[0])
 
 
-
-if __name__ == "__main__":
+def test_console():
     import sys
     if len(sys.argv) < 3:
         print "Usage: server.py <hostname> <port>"
         exit()
     s = QuiltServer(sys.argv[1], int(sys.argv[2]))
     s.start()
+
+if __name__ == "__main__":
+    test_console()
