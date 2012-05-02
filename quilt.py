@@ -138,18 +138,6 @@ class QuiltProtocol(object):
         self.port = port
         self.outgoing_queues = {}
 
-    def send_msg(self, server, msg):
-        """
-        Send a message to a specific server
-
-        :type server: str
-        :param server: Server name to send a message to
-
-        :type msg: str
-        :param msg: Message to send to server
-        """
-        self.outgoing_queues[server].put(["message",msg])
-
     def connect_to_server(self,server, port):
         """
         Connect to a server
@@ -166,7 +154,7 @@ class QuiltProtocol(object):
             new_thread = OutgoingThread(server, port, new_queue)
             new_thread.start()
             self.outgoing_queues[server] = new_queue
-            self.outgoing_queues[server].put(["server-connect", self.addr, self.port])
+            self.outgoing_queues[server].put(["server_connect", self.addr, self.port])
 
     def handle_server_connect(self,args):
         """
@@ -183,13 +171,14 @@ class QuiltProtocol(object):
             new_thread = OutgoingThread(outgoing_addr, outgoing_port, new_queue)
             new_thread.start()
             self.outgoing_queues[outgoing_addr] = new_queue
-            self.outgoing_queues[outgoing_addr].put(["server-connect", self.addr, self.port])
+            self.outgoing_queues[outgoing_addr].put(["server_connect", self.addr, self.port])
             print "Server {0}:{1} connected to us".format(outgoing_addr, outgoing_port)
 
     def handle(self, message):
         """
         Handler method recieves a message and decided how to deal with it
-
+        The protocol is split into parts: [destination, cmd, args...]
+        Destination options are: all or a single server
         :type message: list
         :param message: a list of data recieved from a zeromq recv_multipart
         """
@@ -198,10 +187,9 @@ class QuiltProtocol(object):
         #Fill this in with a protocol implementation
         cmd = message[0]
         args = message[1:]
-        if cmd == "server-connect": #A new server connects
+        if hasattr(self,"handle_" + cmd):
+            getattr(self,"handle_" + cmd)(args)
             self.handle_server_connect(args)
-        if cmd == "message":
-            print "\nReceived: {0}\n>>".format(args[0])
 
 
 
