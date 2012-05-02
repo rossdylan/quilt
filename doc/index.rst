@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    quilt
+   quilt.protocol
 
 
 Indices and tables
