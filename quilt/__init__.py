@@ -220,11 +220,13 @@ class QuiltProtocol(object):
             self.handle_server_connect(args)
 
 
-
-if __name__ == "__main__":
+def test_console():
     import sys
     if len(sys.argv) < 3:
         print "Usage: server.py <hostname> <port>"
         exit()
     s = QuiltServer(sys.argv[1], int(sys.argv[2]))
     s.start()
+
+if __name__ == "__main__":
+    test_console()
