@@ -1,7 +1,4 @@
-try:
-    import zmq
-except:
-    print "Error, you don't have pyzmq installed"
+import zmq
 from threading import Thread
 from Queue import Queue
 
@@ -23,11 +20,14 @@ class IncomingThread(Thread):
         self.proc_queue = proc_queue
         self.context = zmq.Context()
         self.incoming = self.context.socket(zmq.REP)
+        self.exit = False
         super(IncomingThread, self).__init__()
 
     def run(self):
         self.incoming.bind("tcp://*:{0}".format(self.listen_port))
         while True:
+            if self.exit:
+                break
             data = self.incoming.recv_multipart()
             self.proc_queue.put(data)
             self.incoming.send("ack")#probably should change this to something proper
