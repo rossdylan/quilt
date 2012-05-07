@@ -47,3 +47,13 @@ A distributed chat client intended for the Sugar environment.
 - mkvirtualenv --system-site-packages quilt
 - python setup.py develop
 - quilt-console --help
+
+#Test Suite
+
+Either use nose directly::
+
+  $ nosetests
+
+Or use the setuptools command::
+
+  $ python setup.py test
