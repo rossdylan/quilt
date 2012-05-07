@@ -8,9 +8,6 @@ Quilt
 .. autoclass:: QuiltServer
    :members:
 
-.. autoclass:: QuiltProtocol
-   :members:
-
 .. autoclass:: IncomingThread
    :members:
 
