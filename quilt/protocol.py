@@ -8,6 +8,7 @@ class QuiltProtocol(object):
         self.addr = addr
         self.port = port
         self.outgoing_queues = {}
+        self.last_pongs = {}  #{server-name: last-pong}
 
     def connect_to_server(self, server, port):
         """
@@ -28,7 +29,6 @@ class QuiltProtocol(object):
             self.outgoing_queues[server].put(
                 [server, "server_connect", self.addr, self.port]
             )
-            self.last_pongs = {}  #{server-name: last-pong}
 
     def ping_server(self, server):
         """
