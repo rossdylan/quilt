@@ -36,7 +36,8 @@ class IncomingThread(Thread):
                 break
             data = self.incoming.recv_multipart()
             self.proc_queue.put(data)
-            self.incoming.send("ack")#probably should change this to something proper
+            # TODO - probably should change this to something proper
+            self.incoming.send("ack")
 
 
 class ProcessorThread(Thread):
@@ -80,7 +81,7 @@ class OutgoingThread(Thread):
 
     def __init__(self, addr, port, queue):
         super(OutgoingThread, self).__init__()
-        self.address = "tcp://{0}:{1}".format(addr,port)
+        self.address = "tcp://{0}:{1}".format(addr, port)
         self.queue = queue
         self.context = zmq.Context()
         self.outgoing = self.context.socket(zmq.REQ)
@@ -90,7 +91,7 @@ class OutgoingThread(Thread):
         while True:
             data = [str(i) for i in self.queue.get()]
             self.outgoing.send_multipart(data)
-            self.outgoing.recv() #Get our ACK
+            self.outgoing.recv()  # Get our ACK
 
 
 class QuiltServer(object):
@@ -115,10 +116,10 @@ class QuiltServer(object):
         self.context = zmq.Context()
         self.proc_queue = Queue()
         from protocol import QuiltProtocol
-        self.protocol = QuiltProtocol(self.addr,self.incoming_port)
+        self.protocol = QuiltProtocol(self.addr, self.incoming_port)
         self.incoming = IncomingThread(self.incoming_port, self.proc_queue)
         for i in range(self.max_processors):
-            t = ProcessorThread(self.proc_queue,self.protocol)
+            t = ProcessorThread(self.proc_queue, self.protocol)
             t.start()
 
     def start(self):
@@ -136,7 +137,8 @@ class QuiltServer(object):
                     continue
                 self.protocol.connect_to_server(user_in[1], user_in[2])
             else:
-               self.protocol.send_msg(user_in[0], " ".join(user_in[1:]))
+                self.protocol.send_msg(user_in[0], " ".join(user_in[1:]))
+
 
 def test_console():
     import sys
