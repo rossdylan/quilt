@@ -1,4 +1,5 @@
 
+import random
 import time
 import zmq
 from Queue import Queue
@@ -13,7 +14,8 @@ PAYLOAD = ["oh", "my word"]
 
 class TestIncoming(object):
     def setUp(self):
-        self.port = 13001
+        # Pick a random port.  Oh my.
+        self.port = random.randint(4000, 20000)
         self.queue = Queue()
         self.thread = quilt.IncomingThread(self.port, self.queue)
         self.sender = self.thread.context.socket(zmq.REQ)
