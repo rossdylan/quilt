@@ -10,4 +10,4 @@ script: nosetests
 notifications:
     email: true
     irc:
-        - "irc.freenode.net#foss-rit"
+        - "irc.freenode.net#floss-seminar"
