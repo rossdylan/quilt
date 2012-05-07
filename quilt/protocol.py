@@ -61,7 +61,7 @@ class QuiltProtocol(object):
             new_thread.start()
             self.outgoing_queues[outgoing_addr] = new_queue
             self.outgoing_queues[outgoing_addr].put(
-                ["server_connect", self.addr, self.port]
+                [self.addr, "server_connect", self.addr, self.port]
             )
             print "Server {0}:{1} connected to us".format(
                 outgoing_addr, outgoing_port)
