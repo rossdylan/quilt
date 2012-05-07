@@ -1,6 +1,10 @@
 #QUILT
 A distributed chat client intended for the Sugar environment.
 Licensed under the MIT License 
+
+#Build Status:
+[![Build Status](https://secure.travis-ci.org/FOSSRIT/quilt.png)](http://travis-ci.org/FOSSRIT/quilt)
+
 #Core Ideas:
 - Mesh network chat system 
 - Dynamic peer discovery over the meshnet
