@@ -60,7 +60,7 @@ class ProcessorThread(Thread):
         while True:
             data = self.proc_queue.get()
             #Somehow in this section we need to do protocol parsing
-            self.protocol.handle(data)
+            self.protocol.handle(*data)
 
 
 class OutgoingThread(Thread):

@@ -71,22 +71,22 @@ class QuiltProtocol(object):
         if server_name in self.outgoing_queues:
             self.outgoing_queues.put([server_name, "pong", self.addr])
 
-    def handle(self, message):
+    def handle(self, dest, cmd, *args):
         """
         Handler method recieves a message and decided how to deal with it
         The protocol is split into parts: [destination, cmd, args...]
         Destination options are: all or a single server
         :type message: list
-        :param message: a list of data recieved from a zeromq recv_multipart
+        :param dest: an address to send to
+        :param cmd: a command to act on
+        :param args: a list of arguments
         """
 
-        assert type(message) == type(list())
+        # A little validation
+        if not isinstance(args, (tuple, list)):
+            raise ValueError("args must be list or tuple  not %r" % type(args))
+
         #Fill this in with a protocol implementation
-        dest = message[0]
-        cmd = message[1]
-        args = message[2:]
         if hasattr(self,"handle_" + cmd):
             getattr(self,"handle_" + cmd)(args)
             self.handle_server_connect(args)
-
-
