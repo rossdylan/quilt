@@ -1,6 +1,6 @@
 #QUILT
 A distributed chat client intended for the Sugar environment.
-
+Licensed under the MIT License 
 #Core Ideas:
 - Mesh network chat system 
 - Dynamic peer discovery over the meshnet
