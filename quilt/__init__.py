@@ -24,6 +24,12 @@ class IncomingThread(Thread):
         super(IncomingThread, self).__init__()
 
     def run(self):
+        try:
+            return self._run()
+        finally:
+            self.incoming.close()
+
+    def _run(self):
         self.incoming.bind("tcp://*:{0}".format(self.listen_port))
         while True:
             if self.exit:
