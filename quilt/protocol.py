@@ -1,6 +1,6 @@
 from Queue import Queue
 from quilt import OutgoingThread
-
+from time import ctime
 
 class QuiltProtocol(object):
 
@@ -28,6 +28,7 @@ class QuiltProtocol(object):
             self.outgoing_queues[server].put(
                 [server, "server_connect", self.addr, self.port]
             )
+            self.last_pongs = {}  #{server-name: last-pong}
 
     def ping_server(self, server):
         """
@@ -84,6 +85,17 @@ class QuiltProtocol(object):
         else:
             raise ValueError(
                 "%r is not a server I am configured to ping." % server_name)
+
+    def handle_pong(self, server_name):
+        """
+        Handle the returning pong from a server we have pinged
+
+        :type server_name: str
+        :param server_name: address of the server sending us a pong
+        """
+
+        if server_name in self.outgoing_queues:
+            self.last_pongs[server_name] = ctime()
 
     def handle(self, dest, cmd, *args):
         """
