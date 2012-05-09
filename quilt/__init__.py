@@ -1,6 +1,7 @@
 import zmq
 from threading import Thread
-from Queue import Queue
+from Queue import Queue, Empty
+import time
 
 
 class IncomingThread(Thread):
@@ -59,9 +60,13 @@ class ProcessorThread(Thread):
 
     def run(self):
         while True:
-            data = self.proc_queue.get()
-            #Somehow in this section we need to do protocol parsing
-            self.protocol.handle(*data)
+            try:
+                data = self.proc_queue.get_nowait()
+                if data == None:
+                    break
+                self.protocol.handle(*data)
+            except Empty:
+                time.sleep(1)
 
 
 class OutgoingThread(Thread):
@@ -121,6 +126,7 @@ class QuiltServer(object):
         from protocol import QuiltProtocol
         self.protocol = QuiltProtocol(self.addr, self.incoming_port)
         self.incoming = IncomingThread(self.incoming_port, self.proc_queue)
+        self.incoming.setDaemon(True)
         for i in range(self.max_processors):
             t = ProcessorThread(self.proc_queue, self.protocol)
             t.start()
