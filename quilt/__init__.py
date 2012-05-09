@@ -89,7 +89,10 @@ class OutgoingThread(Thread):
     def run(self):
         self.outgoing.connect(self.address)
         while True:
-            data = [str(i) for i in self.queue.get()]
+            data = self.queue.get()
+            if data == None:
+                break
+            data = [str(i) for i in data]
             self.outgoing.send_multipart(data)
             self.outgoing.recv()  # Get our ACK
 
