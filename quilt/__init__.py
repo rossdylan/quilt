@@ -152,6 +152,14 @@ class QuiltServer(object):
             else:
                 self.protocol.send_msg(user_in[0], " ".join(user_in[1:]))
 
+    def terminate_threads(self):
+        """
+        Terminates all threads except incoming threads which are auto killed on exit
+        """
+        for server in self.protocol.outgoing_queues:
+            self.protocol.outgoing_queues[server].put(None)
+        for i in range(self.max_processors):
+            self.proc_queue.put(None)
 
 def test_console():
     import sys
