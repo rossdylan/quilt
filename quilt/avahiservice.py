@@ -11,7 +11,8 @@ __all__ = ["QuiltAvahiServer", "QuiltAvahiClient"]
 
 TYPE = '_quilt._tcp'
 
-class QuiltAvahiClient(object): 
+from threading import Thread
+class QuiltAvahiClient(Thread): 
     """ Qulit's Avahi Service Discovery Object """
    
     def __init__(self): 
@@ -66,7 +67,7 @@ class QuiltAvahiClient(object):
             pass
 
 
-    def search(self): 
+    def run(self): 
         """ Searches the local network for broadcasting avahi services, 
             handles found services in the resolved method 
         """
@@ -132,12 +133,3 @@ class QuiltAvahiServer(object):
     def unpublish(self): 
         """ Remove the service """
         self.group.Reset()
-
-if __name__ == "__main__": 
-    client = QuiltAvahiClient()
-    client.search()
-
-    serv = QuiltAvahiServer()
-    serv.publish()
-    raw_input("Press a key to kill...")
-    serv.unpublish()
