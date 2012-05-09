@@ -30,6 +30,42 @@ class QuiltProtocol(object):
                 [server, "server_connect", self.addr, self.port]
             )
 
+    def send_join(self, user, channel):
+        """
+        Send the join command to all our connected servers
+
+        :type user: str
+        :param user: The user joining a channel
+
+        :type channel: str
+        :param channel: The channel the user is joining
+        """
+
+        for server in self.outgoing_queue:
+            self.outgoing_queues[server].put(
+                ["*", user, channel]
+            )
+
+    def send_message(self, user, channel, message):
+        """
+        Send a chat message from the specified user,
+        to the specified channel
+
+        :type user: str
+        :param user: user sending the message
+
+        :type channel: str
+        :param channel: channel to send message to
+
+        :type message: str
+        :param: message: message to be sent
+        """
+
+        for server in self.outgoing_queues:
+            self.outgoing_queues[server].put(
+                ["*", user, channel, message]
+            )
+
     def ping_server(self, server):
         """
         Ping a specific server
