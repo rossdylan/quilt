@@ -11,3 +11,5 @@ notifications:
     email: true
     irc:
         - "irc.freenode.net#floss-seminar"
+    on_success: change
+    on_failure: always
