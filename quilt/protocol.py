@@ -105,7 +105,6 @@ class QuiltProtocol(object):
         :type outgoing_port: str (or int)
         :param outgoing_port: Address of the outgoing port
         """
-
         if not isinstance(outgoing_port, int):
             outgoing_port = int(outgoing_port)
 
@@ -117,7 +116,7 @@ class QuiltProtocol(object):
             new_thread.start()
             self.outgoing_queues[outgoing_addr] = new_queue
             self.outgoing_queues[outgoing_addr].put(
-                [self.addr, "server_connect", self.addr, self.port]
+                [outgoing_addr, "server_connect", self.addr, self.port]
             )
             print "Server {0}:{1} connected to us".format(
                 outgoing_addr, outgoing_port)

@@ -123,6 +123,10 @@ class QuiltServer(object):
             t.start()
 
     def start(self):
+        """Start the server and don't do anything else"""
+        self.incoming.start
+
+    def start_with_ui(self):
         """
         Start the server and display and user interface
         """
@@ -146,7 +150,7 @@ def test_console():
         print "Usage: server.py <hostname> <port>"
         exit()
     s = QuiltServer(sys.argv[1], int(sys.argv[2]))
-    s.start()
+    s.start_with_ui()
 
 if __name__ == "__main__":
     test_console()
