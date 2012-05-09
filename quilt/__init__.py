@@ -149,6 +149,9 @@ class QuiltServer(object):
                     print "/connect <address> <port>"
                     continue
                 self.protocol.connect_to_server(user_in[1], user_in[2])
+            elif cmd == "/exit":
+                self.terminate_threads()
+                break
             else:
                 self.protocol.send_msg(user_in[0], " ".join(user_in[1:]))
 

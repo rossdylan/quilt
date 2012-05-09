@@ -24,6 +24,7 @@ class QuiltProtocol(object):
         if not server in self.outgoing_queues:
             new_queue = Queue()
             new_thread = OutgoingThread(server, port, new_queue)
+            new_thread.setDaemon(True)
             new_thread.start()
             self.outgoing_queues[server] = new_queue
             self.outgoing_queues[server].put(
