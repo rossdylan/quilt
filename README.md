@@ -3,7 +3,8 @@ A distributed chat client intended for the Sugar environment.
 Licensed under the MIT License 
 
 #Build Status:
-[![Build Status](https://secure.travis-ci.org/FOSSRIT/quilt.png)](http://travis-ci.org/FOSSRIT/quilt)
+[![Build Status on master](https://secure.travis-ci.org/FOSSRIT/quilt.png?branch=master)](http://travis-ci.org/FOSSRIT/quilt)
+[![Build Status on develop](https://secure.travis-ci.org/FOSSRIT/quilt.png?branch=develop)](http://travis-ci.org/FOSSRIT/quilt)
 
 #Core Ideas:
 - Mesh network chat system 

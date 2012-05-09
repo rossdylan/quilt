@@ -1,6 +1,6 @@
 from Queue import Queue
 from quilt import OutgoingThread
-
+from time import ctime
 
 class QuiltProtocol(object):
 
@@ -8,6 +8,7 @@ class QuiltProtocol(object):
         self.addr = addr
         self.port = port
         self.outgoing_queues = {}
+        self.last_pongs = {}  #{server-name: last-pong}
 
     def connect_to_server(self, server, port):
         """
@@ -84,6 +85,51 @@ class QuiltProtocol(object):
         else:
             raise ValueError(
                 "%r is not a server I am configured to ping." % server_name)
+
+    def handle_pong(self, server_name):
+        """
+        Handle the returning pong from a server we have pinged
+
+        :type server_name: str
+        :param server_name: address of the server sending us a pong
+        """
+
+        if server_name in self.outgoing_queues:
+            self.last_pongs[server_name] = ctime()
+
+    def handle_message(self, user, channel, message):
+        """
+        Handle a chat message sent from some one else on the network
+        messages are sent to specific rooms so only people in that channel see the message
+
+        :type user: str
+        :param user: username (nick) of the person sending the message
+
+        :type channel: str
+        :param channel: channel to send message to (used in filtering who recieves the message)
+
+        :type message: str
+        :param message: the actual message being sent
+        """
+
+        """
+        This needs pass the message back to the UI handling bits so it can display the message
+        """
+        pass
+
+    def handle_join(self, user, channel):
+        """
+        Handle a message sent out when a user joins a channel
+        It seems like every node is going to need to keep this value for every channel
+        That way when a user joins a new channel they have all the users in that channel already
+
+        :type user: str
+        :param user: The user joining the channel
+
+        :type channel: str
+        :param channel: the channel the user is joining
+        """
+        pass
 
     def handle(self, dest, cmd, *args):
         """
