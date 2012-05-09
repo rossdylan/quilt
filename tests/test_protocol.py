@@ -18,6 +18,8 @@ class TestProtocol(object):
 
     def test_server_connect_incoming(self):
         time.sleep(2)
-        print self.serverOne.addr
-        print self.serverTwo.protocol.outgoing_queues
         assert self.serverOne.addr in self.serverTwo.protocol.outgoing_queues
+
+    def tearDown(self):
+        self.serverOne.terminate_threads()
+        self.serverTwo.terminate_threads()
