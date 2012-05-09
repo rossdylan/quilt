@@ -43,7 +43,22 @@ class QuiltProtocol(object):
 
         for server in self.outgoing_queue:
             self.outgoing_queues[server].put(
-                ["*", user, channel]
+                ["*", "join", user, channel]
+            )
+
+    def send_part(self, user, channel):
+        """
+        Send the part command to all connected servers
+
+        :type user: str
+        :param user: user sending the part command
+
+        :type channel: str
+        :param channel: channel the user is parting from
+        """
+        for server in self.outgoing_queue:
+            self.outgoing_queues[server].put(
+                ["*", "part", user, channel]
             )
 
     def send_message(self, user, channel, message):
@@ -63,7 +78,7 @@ class QuiltProtocol(object):
 
         for server in self.outgoing_queues:
             self.outgoing_queues[server].put(
-                ["*", user, channel, message]
+                ["*", "message", user, channel, message]
             )
 
     def ping_server(self, server):
@@ -164,6 +179,19 @@ class QuiltProtocol(object):
 
         :type channel: str
         :param channel: the channel the user is joining
+        """
+        pass
+
+    def handle_part(self, user, channel):
+        """
+        Handle the part command being sent by a user
+        This is very similar to handle_join, it updates a dict of some kind with all the channels
+
+        :type user: str
+        :param user: user parting the channel
+
+        :type channel: str
+        :param channel: channel user is parting from
         """
         pass
 
