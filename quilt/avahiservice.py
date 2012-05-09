@@ -155,7 +155,3 @@ class QuiltAvahiServer(object):
     def unpublish(self): 
         """ Remove the service """
         self.group.Reset()
-
-if __name__ == "__main__": 
-    search = QuiltAvahiClient()
-    search.run()
