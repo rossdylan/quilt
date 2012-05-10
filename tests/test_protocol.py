@@ -17,8 +17,18 @@ class TestProtocol(object):
         assert self.serverTwo.addr in self.serverOne.protocol.outgoing_queues
 
     def test_server_connect_incoming(self):
-        time.sleep(2)
+        time.sleep(1)
+        print self.serverTwo.protocol.outgoing_queues
         assert self.serverOne.addr in self.serverTwo.protocol.outgoing_queues
+
+    def test_send_ping(self):
+        time.sleep(2)
+        print self.serverTwo.protocol.outgoing_queues
+        self.serverOne.protocol.ping_server('127.0.0.1')
+        time.sleep(2)
+        print self.serverOne.protocol.last_pongs
+        assert self.serverOne.protocol.last_pongs != {}
+
 
     def tearDown(self):
         self.serverOne.terminate_threads()
