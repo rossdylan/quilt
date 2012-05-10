@@ -133,7 +133,7 @@ class QuiltServer(object):
 
     def start(self):
         """Start the server and don't do anything else"""
-        self.incoming.start
+        self.incoming.start()
 
     def start_with_ui(self):
         """
