@@ -93,7 +93,7 @@ class QuiltProtocol(object):
         """
 
         if server in self.outgoing_queues:
-            self.outgoing_queues.put([server, "ping", self.addr])
+            self.outgoing_queues[server].put([server, "ping", self.addr])
 
     def handle_server_connect(self, outgoing_addr, outgoing_port):
         """
@@ -132,7 +132,7 @@ class QuiltProtocol(object):
         :param server_name: The server to ping
         """
         if server_name in self.outgoing_queues:
-            self.outgoing_queues.put([server_name, "pong", self.addr])
+            self.outgoing_queues[server_name].put([server_name, "pong", self.addr])
         else:
             raise ValueError(
                 "%r is not a server I am configured to ping." % server_name)
@@ -217,6 +217,5 @@ class QuiltProtocol(object):
         #Fill this in with a protocol implementation
         if hasattr(self, "handle_" + cmd):
             getattr(self, "handle_" + cmd)(*args)
-            self.handle_server_connect(*args)
         else:
             raise ValueError("No such command %r (handle_%s)" % (cmd, cmd))
