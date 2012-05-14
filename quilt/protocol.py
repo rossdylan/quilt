@@ -1,6 +1,7 @@
 from Queue import Queue
 from quilt import OutgoingThread
 from time import ctime
+from models import QuiltUser, QuiltChannel
 
 class QuiltProtocol(object):
 
@@ -9,6 +10,8 @@ class QuiltProtocol(object):
         self.port = port
         self.outgoing_queues = {}
         self.last_pongs = {}  #{server-name: last-pong}
+        self.channels = {}
+        self.user = QuiltUser()
 
     def connect_to_server(self, server, port):
         """
@@ -180,7 +183,12 @@ class QuiltProtocol(object):
         :type channel: str
         :param channel: the channel the user is joining
         """
-        pass
+
+        if channel in self.channels:
+            self.channels[channel].addUser(user)
+        else:
+            self.channels[channel] = QuiltChannel()
+            self.channels[channel].adduser(user)
 
     def handle_part(self, user, channel):
         """
@@ -193,7 +201,11 @@ class QuiltProtocol(object):
         :type channel: str
         :param channel: channel user is parting from
         """
-        pass
+
+        if channel in self.channels:
+            self.channels[channel].removeuser(user)
+            if len(self.channels[channel].users) == 0:
+                del self.channels[channel]
 
     def handle(self, dest, cmd, *args):
         """
