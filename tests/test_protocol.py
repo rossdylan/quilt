@@ -29,6 +29,11 @@ class TestProtocol(object):
         print self.serverOne.protocol.last_pongs
         assert self.serverOne.protocol.last_pongs != {}
 
+    def test_send_join(self):
+        self.serverOne.protocol.send_join("unit_test_user", "testing_channel")
+        time.sleep(2)
+        assert "testing_channel" in self.serverTwo.protocol.channels
+        assert "unit_test_user" in self.serverTwo.protocol.channels["testing_channel"].users
 
     def tearDown(self):
         self.serverOne.terminate_threads()
