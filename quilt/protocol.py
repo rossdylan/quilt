@@ -11,7 +11,7 @@ class QuiltProtocol(object):
         self.outgoing_queues = {}
         self.last_pongs = {}  #{server-name: last-pong}
         self.channels = {}
-        self.user = QuiltUser(user)
+        self.user = QuiltUser(user, user)
 
     def connect_to_server(self, server, port):
         """
