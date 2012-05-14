@@ -5,13 +5,13 @@ from models import QuiltUser, QuiltChannel
 
 class QuiltProtocol(object):
 
-    def __init__(self, addr, port):
+    def __init__(self, addr, port, user):
         self.addr = addr
         self.port = port
         self.outgoing_queues = {}
         self.last_pongs = {}  #{server-name: last-pong}
         self.channels = {}
-        self.user = QuiltUser()
+        self.user = QuiltUser(user)
 
     def connect_to_server(self, server, port):
         """
@@ -187,7 +187,7 @@ class QuiltProtocol(object):
         if channel in self.channels:
             self.channels[channel].addUser(user)
         else:
-            self.channels[channel] = QuiltChannel()
+            self.channels[channel] = QuiltChannel(channel)
             self.channels[channel].adduser(user)
 
     def handle_part(self, user, channel):
