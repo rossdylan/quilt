@@ -233,7 +233,7 @@ class QuiltProtocol(object):
 
         #Fill this in with a protocol implementation
         if hasattr(self, "handle_" + cmd):
-            getattr(self, "handle_" + cmd)(routing, *args)
+            getattr(self, "handle_" + cmd)(*args)
             routing_table = routing.split(",")
             routing_table.append(self.addr)
             compiled_route = ",".join(routing_table)
