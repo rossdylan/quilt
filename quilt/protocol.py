@@ -45,7 +45,7 @@ class QuiltProtocol(object):
         :param channel: The channel the user is joining
         """
 
-        for server in self.outgoing_queue:
+        for server in self.outgoing_queues:
             self.outgoing_queues[server].put(
                 ["*", "join", user, channel]
             )
@@ -188,7 +188,7 @@ class QuiltProtocol(object):
             self.channels[channel].addUser(user)
         else:
             self.channels[channel] = QuiltChannel(channel)
-            self.channels[channel].adduser(user)
+            self.channels[channel].addUser(user)
 
     def handle_part(self, user, channel):
         """
@@ -220,7 +220,6 @@ class QuiltProtocol(object):
         :param args: a list of arguments
         """
 
-        print "Rocking %r %r %r" % (dest, cmd, args)
 
         # A little validation
         if not isinstance(args, (tuple, list)):
