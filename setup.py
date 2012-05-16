@@ -33,7 +33,7 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.6",
     ],
-    install_requires=['pyzmq-static',
+    install_requires=['pyzmq-static==2.1.7.1',
     ],
     tests_require=[
         'nose',
