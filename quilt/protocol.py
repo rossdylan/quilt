@@ -135,7 +135,7 @@ class QuiltProtocol(object):
         :param server_name: The server to ping
         """
         if server_name in self.outgoing_queues:
-            self.outgoing_queues[server_name].put([server_name, "pong", self.addr])
+            self.outgoing_queues[server_name].put([self.addr, server_name, "pong", self.addr])
         else:
             raise ValueError(
                 "%r is not a server I am configured to ping." % server_name)
