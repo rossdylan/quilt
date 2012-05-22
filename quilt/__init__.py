@@ -120,7 +120,7 @@ class QuiltServer(object):
     def __init__(self, addr, incoming_port, max_proc=10, user="test_user"):
         self.max_processors = max_proc
         self.addr = addr
-        self.name = addr + incoming_port
+        self.name = addr + str(incoming_port)
         self.incoming_port = incoming_port
         self.context = zmq.Context()
         self.proc_queue = Queue()

@@ -5,9 +5,10 @@ from models import QuiltUser, QuiltChannel
 
 class QuiltProtocol(object):
 
-    def __init__(self, addr, port, user):
+    def __init__(self, name, addr, port, user):
         self.addr = addr
         self.port = port
+        self.name = name
         self.outgoing_queues = {}
         self.last_pongs = {}  #{server-name: last-pong}
         self.channels = {}
@@ -23,15 +24,15 @@ class QuiltProtocol(object):
         :type port: int
         :param port: port number of the server
         """
-
-        if not server in self.outgoing_queues:
+        name = server + str(port)
+        if not name in self.outgoing_queues:
             new_queue = Queue()
             new_thread = OutgoingThread(server, port, new_queue)
             new_thread.setDaemon(True)
             new_thread.start()
-            self.outgoing_queues[server] = new_queue
-            self.outgoing_queues[server].put(
-                [self.addr, server, "server_connect", self.addr, self.port]
+            self.outgoing_queues[name] = new_queue
+            self.outgoing_queues[name].put(
+                [self.name, server, "server_connect", self.addr, self.port]
             )
 
     def send_join(self, user, channel):
@@ -47,7 +48,7 @@ class QuiltProtocol(object):
 
         for server in self.outgoing_queues:
             self.outgoing_queues[server].put(
-                [self.addr, "*", "join", user, channel]
+                [self.name, "*", "join", user, channel]
             )
 
     def send_part(self, user, channel):
@@ -62,7 +63,7 @@ class QuiltProtocol(object):
         """
         for server in self.outgoing_queue:
             self.outgoing_queues[server].put(
-                [self.addr, "*", "part", user, channel]
+                [self.name, "*", "part", user, channel]
             )
 
     def send_message(self, user, channel, message):
@@ -82,7 +83,7 @@ class QuiltProtocol(object):
 
         for server in self.outgoing_queues:
             self.outgoing_queues[server].put(
-                [self.addr, "*", "message", user, channel, message]
+                [self.name, "*", "message", user, channel, message]
             )
 
     def ping_server(self, server):
@@ -96,7 +97,7 @@ class QuiltProtocol(object):
         """
 
         if server in self.outgoing_queues:
-            self.outgoing_queues[server].put([self.addr, server, "ping", self.addr])
+            self.outgoing_queues[server].put([self.name, server, "ping", self.name])
 
     def handle_server_connect(self, outgoing_addr, outgoing_port):
         """
@@ -111,16 +112,16 @@ class QuiltProtocol(object):
         """
         if not isinstance(outgoing_port, int):
             outgoing_port = int(outgoing_port)
-
-        if not outgoing_addr in self.outgoing_queues:
+        name = outgoing_addr + str(outgoing_port)
+        if not name in self.outgoing_queues:
             new_queue = Queue()
             new_thread = OutgoingThread(
                 outgoing_addr, outgoing_port, new_queue
             )
             new_thread.start()
-            self.outgoing_queues[outgoing_addr] = new_queue
-            self.outgoing_queues[outgoing_addr].put(
-                [self.addr, outgoing_addr, "server_connect", self.addr, self.port]
+            self.outgoing_queues[name] = new_queue
+            self.outgoing_queues[name].put(
+                [self.name, outgoing_addr, "server_connect", self.addr, self.port]
             )
             print "Server {0}:{1} connected to us".format(
                 outgoing_addr, outgoing_port)
@@ -135,7 +136,7 @@ class QuiltProtocol(object):
         :param server_name: The server to ping
         """
         if server_name in self.outgoing_queues:
-            self.outgoing_queues[server_name].put([self.addr, server_name, "pong", self.addr])
+            self.outgoing_queues[server_name].put([self.name, server_name, "pong", self.name])
         else:
             raise ValueError(
                 "%r is not a server I am configured to ping." % server_name)
@@ -235,7 +236,7 @@ class QuiltProtocol(object):
         if hasattr(self, "handle_" + cmd):
             getattr(self, "handle_" + cmd)(*args)
             routing_table = routing.split(",")
-            routing_table.append(self.addr)
+            routing_table.append(self.name)
             compiled_route = ",".join(routing_table)
             if dest == "*":
                 for server in self.outgoing_queues:
