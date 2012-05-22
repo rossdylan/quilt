@@ -13,3 +13,11 @@ class QuiltAcvity(activity.Activity):
 
         self.set_toolbox(toolbox)
         toolbox.show()
+        
+        editor = Editor()
+        self.set_canvas(editor)
+        editor.show()
+
+from sugar.activity import bundlebuilder
+if __name__ == "__main__":
+   print "Good To Go"

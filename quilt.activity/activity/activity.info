@@ -1,0 +1,7 @@
+[Activity] 
+name = Quilt
+activity_version = 0.1
+bundle_id = foss.rit.Quilt
+license = MIT
+exec = sugar-activity quiltactivity.QuiltActivity
+show_launcher = yes 

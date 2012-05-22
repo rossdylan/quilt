@@ -16,7 +16,7 @@ f.close()
 try:
     import multiprocessing
     import logging
-except ImportError:
+except ImportError: 
     pass
 
 setup(
