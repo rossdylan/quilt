@@ -1,6 +1,7 @@
 import zmq
 from threading import Thread
-from Queue import Queue
+from Queue import Queue, Empty
+import time
 
 
 class IncomingThread(Thread):
@@ -59,9 +60,13 @@ class ProcessorThread(Thread):
 
     def run(self):
         while True:
-            data = self.proc_queue.get()
-            #Somehow in this section we need to do protocol parsing
-            self.protocol.handle(*data)
+            try:
+                data = self.proc_queue.get_nowait()
+                if data == None:
+                    break
+                self.protocol.handle(*data)
+            except Empty:
+                time.sleep(1)
 
 
 class OutgoingThread(Thread):
@@ -89,7 +94,10 @@ class OutgoingThread(Thread):
     def run(self):
         self.outgoing.connect(self.address)
         while True:
-            data = [str(i) for i in self.queue.get()]
+            data = self.queue.get()
+            if data == None:
+                break
+            data = [str(i) for i in data]
             self.outgoing.send_multipart(data)
             self.outgoing.recv()  # Get our ACK
 
@@ -109,20 +117,26 @@ class QuiltServer(object):
     :param: max_proc: maximum number of processor threads to use
     """
 
-    def __init__(self, addr, incoming_port, max_proc=10):
+    def __init__(self, addr, incoming_port, max_proc=10, user="test_user"):
         self.max_processors = max_proc
         self.addr = addr
+        self.name = addr + str(incoming_port)
         self.incoming_port = incoming_port
         self.context = zmq.Context()
         self.proc_queue = Queue()
         from protocol import QuiltProtocol
-        self.protocol = QuiltProtocol(self.addr, self.incoming_port)
+        self.protocol = QuiltProtocol(self.name, self.addr, self.incoming_port, user)
         self.incoming = IncomingThread(self.incoming_port, self.proc_queue)
+        self.incoming.setDaemon(True)
         for i in range(self.max_processors):
             t = ProcessorThread(self.proc_queue, self.protocol)
             t.start()
 
     def start(self):
+        """Start the server and don't do anything else"""
+        self.incoming.start()
+
+    def start_with_ui(self):
         """
         Start the server and display and user interface
         """
@@ -136,9 +150,20 @@ class QuiltServer(object):
                     print "/connect <address> <port>"
                     continue
                 self.protocol.connect_to_server(user_in[1], user_in[2])
+            elif cmd == "/exit":
+                self.terminate_threads()
+                break
             else:
                 self.protocol.send_msg(user_in[0], " ".join(user_in[1:]))
 
+    def terminate_threads(self):
+        """
+        Terminates all threads except incoming threads which are auto killed on exit
+        """
+        for server in self.protocol.outgoing_queues:
+            self.protocol.outgoing_queues[server].put(None)
+        for i in range(self.max_processors):
+            self.proc_queue.put(None)
 
 def test_console():
     import sys
@@ -146,7 +171,7 @@ def test_console():
         print "Usage: server.py <hostname> <port>"
         exit()
     s = QuiltServer(sys.argv[1], int(sys.argv[2]))
-    s.start()
+    s.start_with_ui()
 
 if __name__ == "__main__":
     test_console()
