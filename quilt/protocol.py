@@ -13,6 +13,7 @@ class QuiltProtocol(object):
         self.last_pongs = {}  #{server-name: last-pong}
         self.channels = {}
         self.user = QuiltUser(user, user)
+        self.message_queue = Queue() #  used to store messages being sent to the UI
 
     def connect_to_server(self, server, port):
         """
@@ -155,7 +156,7 @@ class QuiltProtocol(object):
     def handle_message(self, user, channel, message):
         """
         Handle a chat message sent from some one else on the network
-        messages are sent to specific rooms so only people in that channel see the message
+        messages are put into a queue amd the ui pulls
 
         :type user: str
         :param user: username (nick) of the person sending the message
@@ -167,10 +168,9 @@ class QuiltProtocol(object):
         :param message: the actual message being sent
         """
 
-        """
-        This needs pass the message back to the UI handling bits so it can display the message
-        """
-        pass
+        self.message_queue.put({'user': user,
+            'channel': channel,
+            'message': message})
 
     def handle_join(self, user, channel):
         """
