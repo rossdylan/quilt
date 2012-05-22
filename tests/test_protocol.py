@@ -66,6 +66,7 @@ class TestProtocol(object):
 
 
     def tearDown(self):
+        time.sleep(4)
         self.serverOne.terminate_threads()
         self.serverTwo.terminate_threads()
         self.serverThree.terminate_threads()
