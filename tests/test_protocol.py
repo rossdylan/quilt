@@ -2,6 +2,9 @@ import quilt
 import random
 import time
 
+MESSAGE_PAYLOAD = "omgquiltfosslol"
+
+
 class TestProtocol(object):
 
     def setUp(self):
@@ -42,6 +45,25 @@ class TestProtocol(object):
         time.sleep(2)
         assert "testing_channel" in self.serverTwo.protocol.channels
         assert "unit_test_user" in self.serverTwo.protocol.channels["testing_channel"].users
+
+    def test_send_message(self):
+        time.sleep(2)
+        self.serverOne.protocol.send_message("unit_test_user",
+                "testing_channel",
+                MESSAGE_PAYLOAD)
+
+        server_two_msg = self.serverTwo.protocol.message_queue.get()
+        server_three_msg = self.serverThree.protocol.message_queue.get()
+
+        assert server_two_msg['message'] == MESSAGE_PAYLOAD
+        assert server_three_msg['message'] == MESSAGE_PAYLOAD
+
+        assert server_two_msg['user'] == "unit_test_user"
+        assert server_three_msg['user'] == "unit_test_user"
+
+        assert server_two_msg['channel'] == "testing_channel"
+        assert server_three_msg['channel'] == "testing_channel"
+
 
     def tearDown(self):
         self.serverOne.terminate_threads()
