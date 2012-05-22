@@ -125,7 +125,9 @@ class QuiltServer(object):
         self.context = zmq.Context()
         self.proc_queue = Queue()
         from protocol import QuiltProtocol
-        self.protocol = QuiltProtocol(self.name, self.addr, self.incoming_port, user)
+        from models import QuiltUser
+        self.user = QuiltUser(user, user)
+        self.protocol = QuiltProtocol(self.name, self.addr, self.incoming_port, self.user)
         self.incoming = IncomingThread(self.incoming_port, self.proc_queue)
         self.incoming.setDaemon(True)
         for i in range(self.max_processors):

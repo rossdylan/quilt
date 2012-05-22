@@ -1,7 +1,7 @@
 from Queue import Queue
 from quilt import OutgoingThread
 from time import ctime
-from models import QuiltUser, QuiltChannel
+
 
 class QuiltProtocol(object):
 
@@ -12,7 +12,7 @@ class QuiltProtocol(object):
         self.outgoing_queues = {}
         self.last_pongs = {}  #{server-name: last-pong}
         self.channels = {}
-        self.user = QuiltUser(user, user)
+        self.user = user
         self.message_queue = Queue() #  used to store messages being sent to the UI
 
     def connect_to_server(self, server, port):
@@ -188,6 +188,7 @@ class QuiltProtocol(object):
         if channel in self.channels:
             self.channels[channel].addUser(user)
         else:
+            from models import QuiltChannel
             self.channels[channel] = QuiltChannel(channel)
             self.channels[channel].addUser(user)
 

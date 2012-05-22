@@ -39,7 +39,7 @@ setup(
         'nose',
     ],
     test_suite='nose.collector',
-    packages=['quilt'],
+    packages=['quilt', 'quilt.models'],
     include_package_data=True,
     zip_safe=False,
     entry_points="""
