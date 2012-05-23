@@ -3,8 +3,8 @@ A distributed chat client intended for the Sugar environment.
 Licensed under the MIT License 
 
 #Build Status:
-[![Build Status on master](https://secure.travis-ci.org/FOSSRIT/quilt.png?branch=master)](http://travis-ci.org/FOSSRIT/quilt)
-[![Build Status on develop](https://secure.travis-ci.org/FOSSRIT/quilt.png?branch=develop)](http://travis-ci.org/FOSSRIT/quilt)
+Master: [![Build Status on master](https://secure.travis-ci.org/FOSSRIT/quilt.png?branch=master)](http://travis-ci.org/FOSSRIT/quilt)
+Develop: [![Build Status on develop](https://secure.travis-ci.org/FOSSRIT/quilt.png?branch=develop)](http://travis-ci.org/FOSSRIT/quilt)
 
 #Core Ideas:
 - Mesh network chat system 
@@ -12,39 +12,34 @@ Licensed under the MIT License
 - Routing that tolerates unstable nodes that may go offline randomly
 - Easy to use and operate
 
-#Protocol Ideas:
-- protocol itself it loosely based on irc only with json
-- all messages are JSON blobs
-- If we do continue on with json we might want to use a faster json parser
-- Messages include:
-	- JOIN <addr> <nick> <chan>
-	- PART <addr> <nick> <chan>
-	- MSG <addr> <nick> <chan/nick>
-	- SERVERJOIN <addr> <capabilties> <connections>
-	- SERVERPART <addr> <connections>
+#Protocol:
+- protocol itself it loosely based on irc
+- protocol segments are seperated using zeromq multipart messages (act just like a list)
+- protocol template: [routing, destination, command, *args]
+	- routing is a comma seperated list of unique node names ie: node1,node2,node3
+- Currently Implemented:
+	- join
+	- part
+	- server_connect
+	- ping
+	- pong
+	- message
 
-- Possible for channels to be zmq topics and clients simply subscribe to those topics
 
 #Routing Ideas:
-
+- Routing is currently dumb, each message sent out has a comma seperated list of nodes it has been to, if a message returns to a node it has already been to, it is dropped
 #Peer Discovery Ideas:
-- Use the built in OLPC meshnetworking system
-	- Tubes + dbus + olpc activity callbacks
-- Use something based on avahi (skip all the olpc stuff)
-- Write our own peer discovery system
+- Peer discovery is currently implemented using an avahi service
 
 #Internals
--[NOTE] Queues are to hopefully work around threading funky-ness
-- Single Thread handles incoming requests and puts them into a queue to be processed
-    - Queue handlers then process the data and determine what to do with it
-        - This could include forwarding messages to all outgoing
-            - Put the message into the outgoing queue for whatever server it needs to go to
+- There are 3 main threads
+	- IncomingThread which puts incoming messages into the processing queue
+	- ProcessorThread which takes messages from the processing queue and handles them using a QuiltProtocol object
+	- OutgoingThreads are assigned one per server and take messages from a given queue and send them to their assigned server
 - Incoming message --> proc-queue -> processor thread -> server Dependant Outgoing Queue
 
 #Dependancies:
-- pyzmq (pip install zmq)
-	- libevent
-	- zeromq
+	pyzmq-static
 
 #Hacking
 
